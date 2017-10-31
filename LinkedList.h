@@ -3,13 +3,32 @@
 #include "LinkedListInterface.h"
 using namespace std;
 
-template<typename T>
+template <typename T>
 
 class LinkedList :
-	public LinkedListInterface
+	public LinkedListInterface<T>
 {
 public:
-	LinkedList(void) {};
+
+	class Node
+	{
+	public:
+		T value;
+		Node *next;
+
+		Node(T valor)
+		{
+			value = valor;
+			next = NULL;
+		}
+	};
+	int listSize;
+	Node *head, *tail;
+
+	LinkedList(void)
+	{
+		listSize = 0;
+	};
 	virtual ~LinkedList(void) {};
 
 	/*
@@ -19,7 +38,27 @@ public:
 
 	Do not allow duplicate values in the list.
 	*/
-	void insertHead(T value);
+	void insertHead(T value)
+	{
+		if (!(checkDupe(value)))
+		{
+		if (listSize == 0)
+		{
+			Node *n = new Node(value);
+			n->next = NULL;
+			head = n;
+			tail = n;
+			listSize++;
+			return;
+		}
+
+		Node *n = new Node(value);
+		n->next = head;
+		head = n;
+		listSize++;
+		return;
+}
+	}
 
 	/*
 	insertTail
@@ -28,7 +67,28 @@ public:
 
 	Do not allow duplicate values in the list.
 	*/
-	void insertTail(T value);
+	void insertTail(T value)
+	{
+		if (!(checkDupe(value)))
+		{
+		if (listSize == 0)
+		{
+			Node *n = new Node(value);
+			n->next = NULL;
+			head = n;
+			tail = n;
+			listSize++;
+			return;
+		}
+
+		Node *n = new Node(value);
+		tail->next = n;
+		tail = n;
+		n->next = NULL;
+		listSize++;
+		return;
+	}
+	}
 
 	/*
 	insertAfter
@@ -39,7 +99,40 @@ public:
 	A node should only be added if the node whose value is equal to
 	insertionNode is in the list. Do not allow duplicate values in the list.
 	*/
-	void insertAfter(T value, T insertionNode);
+	void insertAfter(T value, T insertionNode)
+	{
+		if (listSize == 0)
+		{
+			return;
+		}
+		if (!(checkDupe(value)))
+		{
+		Node *curr;
+		curr = head;
+		while (curr->next != NULL)
+		{
+			if (curr->value == insertionNode)
+			{
+				Node *n = new Node(value);
+				n->next = curr->next;
+				curr->next = n;
+				listSize++;
+				return;
+			}
+			curr = curr->next;
+		}
+
+		if (curr == tail)
+		{
+			Node *n = new Node(value);
+			tail->next = n;
+			n->next = NULL;
+			tail = n;
+			listSize++;
+			return;
+		}
+	}
+	}
 
 	/*
 	remove
@@ -48,14 +141,72 @@ public:
 
 	The list may or may not include a node with the given value.
 	*/
-	void remove(T value);
+	void remove(T value)
+	{
+		Node *curr;
+		Node *prev;
+		curr = head;
+		if (listSize == NULL)
+		{
+			return;
+		}
+		if (checkDupe(value))
+		{
+		while (curr->next != NULL)
+		{
+			if (curr->value == value)
+			{
+				if (head == curr)
+				{
+					head = head->next;
+					curr->next == NULL;
+					delete curr;
+					listSize--;
+					return;
+				}
+				else
+				{
+					prev->next = curr->next;
+					curr->next = NULL;
+					delete curr;
+					listSize--;
+					return;
+				}
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		tail = prev;
+		tail->next = NULL;
+		delete curr;
+		listSize--;
+		return;
+	}
+	}
 
 	/*
 	clear
 
 	Remove all nodes from the list.
 	*/
-	void clear();
+	void clear()
+	{
+		Node *curr;
+		Node *prev;
+		curr = head;
+		if (listSize == NULL)
+		{
+			return;
+		}
+		while (curr->next != NULL)
+		{
+			prev = curr;
+			curr = curr->next;
+			delete prev;
+		}
+
+		delete curr;
+	}
 
 	/*
 	at
@@ -65,14 +216,32 @@ public:
 
 	If the given index is out of range of the list, throw an out of range exception.
 	*/
-	T at(int index);
+	T at(int index)
+	{
+		Node *curr;
+		curr = head;
+
+		if (index >= (listSize))
+		{
+			throw out_of_range("YOU'RE STUPID"); //C++ throw error function
+		}
+		for (int i = 0; i < index; i++)
+		{
+			curr = curr->next;
+			i++;
+		}
+		return curr->value;
+	}
 
 	/*
 	size
 
 	Returns the number of nodes in the list.
 	*/
-	int size();
+	int size()
+	{
+		return listSize;
+	}
 
 	/*
 	toString
@@ -83,6 +252,38 @@ public:
 	For example, a LinkedList containing the value 1, 2, 3, 4, and 5 should return
 	"1 2 3 4 5"
 	*/
-	string toString();
+	string toString()
+	{
+		stringstream ss;
+		Node *curr = head;
 
+		if (listSize == 0)
+		{
+			return ss.str();
+		}
+					ss << curr->value << " ";
+					curr = curr->next;
+
+		while ( curr->next != NULL)
+		{
+			ss << curr->value << " ";
+			curr = curr->next;
+		}
+
+		return ss.str();
+	}
+
+	bool checkDupe(T value)
+	{
+		Node *curr= head;
+		while (curr->value != value)
+		{
+			if (curr->next == NULL)
+			{
+				return false;
+			}
+			curr = curr->next;
+		}
+		return true;
+	}
 };
