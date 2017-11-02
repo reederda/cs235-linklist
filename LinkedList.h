@@ -8,7 +8,7 @@ using namespace std;
 template <typename T>
 
 class LinkedList :
-	public LinkedListInterface<T>
+public LinkedListInterface<T>
 {
 public:
 
@@ -24,14 +24,19 @@ public:
 			next = NULL;
 		}
 	};
+
+
 	int listSize;
 	Node *head, *tail;
 
 	LinkedList(void)
 	{
 		listSize = 0;
+		head = nullptr;
+		tail = nullptr;
+
 	};
-	virtual ~LinkedList(void) {};
+	virtual ~LinkedList(void) { clear();};
 
 	/*
 	insertHead
@@ -42,8 +47,6 @@ public:
 	*/
 	void insertHead(T value)
 	{
-		if (!(checkDupe(value)))
-		{
 		if (listSize == 0)
 		{
 			Node *n = new Node(value);
@@ -53,13 +56,14 @@ public:
 			listSize++;
 			return;
 		}
-
-		Node *n = new Node(value);
-		n->next = head;
-		head = n;
-		listSize++;
-		return;
-}
+		if (!(checkDupe(value)))
+		{
+			Node *n = new Node(value);
+			n->next = head;
+			head = n;
+			listSize++;
+			return;
+		}
 	}
 
 	/*
@@ -71,8 +75,6 @@ public:
 	*/
 	void insertTail(T value)
 	{
-		if (!(checkDupe(value)))
-		{
 		if (listSize == 0)
 		{
 			Node *n = new Node(value);
@@ -82,14 +84,17 @@ public:
 			listSize++;
 			return;
 		}
+		if (!(checkDupe(value)))
+		{
 
-		Node *n = new Node(value);
-		tail->next = n;
-		tail = n;
-		n->next = NULL;
-		listSize++;
-		return;
-	}
+
+			Node *n = new Node(value);
+			tail->next = n;
+			tail = n;
+			n->next = NULL;
+			listSize++;
+			return;
+		}
 	}
 
 	/*
@@ -107,33 +112,33 @@ public:
 		{
 			return;
 		}
-		if (!(checkDupe(value)))
-		{
 		Node *curr;
 		curr = head;
-		while (curr->next != NULL)
+		if (!(checkDupe(value)))
 		{
-			if (curr->value == insertionNode)
+			while (curr->next != NULL)
+			{
+				if (curr->value == insertionNode)
+				{
+					Node *n = new Node(value);
+					n->next = curr->next;
+					curr->next = n;
+					listSize++;
+					return;
+				}
+				curr = curr->next;
+			}
+
+			if (curr == tail && curr->value == insertionNode)
 			{
 				Node *n = new Node(value);
-				n->next = curr->next;
-				curr->next = n;
+				tail->next = n;
+				n->next = NULL;
+				tail = n;
 				listSize++;
 				return;
 			}
-			curr = curr->next;
 		}
-
-		if (curr == tail)
-		{
-			Node *n = new Node(value);
-			tail->next = n;
-			n->next = NULL;
-			tail = n;
-			listSize++;
-			return;
-		}
-	}
 	}
 
 	/*
@@ -148,42 +153,56 @@ public:
 		Node *curr;
 		Node *prev;
 		curr = head;
-		if (listSize == NULL)
+		prev = NULL;
+		if (listSize == 0)
 		{
 			return;
 		}
+
 		if (checkDupe(value))
 		{
-		while (curr->next != NULL)
-		{
-			if (curr->value == value)
+			while (curr->next != NULL)
 			{
-				if (head == curr)
+				if (curr->value == value)
 				{
-					head = head->next;
-					curr->next == NULL;
-					delete curr;
-					listSize--;
-					return;
+					if (head == curr)
+					{
+						head = head->next;
+						//curr->next = NULL;
+						delete curr;
+						listSize--;
+						return;
+					}
+					else
+					{
+						prev->next = curr->next;
+						curr->next = NULL;
+						delete curr;
+						listSize--;
+						return;
+					}
 				}
-				else
-				{
-					prev->next = curr->next;
-					curr->next = NULL;
-					delete curr;
-					listSize--;
-					return;
-				}
+
+				prev = curr;
+				curr = curr->next;
 			}
-			prev = curr;
-			curr = curr->next;
+
+			if (listSize == 1)
+			{
+				prev = curr;
+			}
+			tail = prev;
+			tail->next = NULL;
+			delete curr;
+			listSize--;
+
+			if (listSize == 0)
+			{
+				head = NULL;
+				tail = NULL;
+			}
+			return;
 		}
-		tail = prev;
-		tail->next = NULL;
-		delete curr;
-		listSize--;
-		return;
-	}
 	}
 
 	/*
@@ -196,7 +215,7 @@ public:
 		Node *curr;
 		Node *prev;
 		curr = head;
-		if (listSize == NULL)
+		if (listSize == 0)
 		{
 			return;
 		}
@@ -208,6 +227,9 @@ public:
 		}
 
 		delete curr;
+		head = NULL;
+		tail = NULL;
+		listSize = 0;
 	}
 
 	/*
@@ -223,14 +245,14 @@ public:
 		Node *curr;
 		curr = head;
 
-		if (index >= (listSize))
+		if (index >= (listSize) || index < 0)
 		{
 			throw out_of_range("YOU'RE STUPID"); //C++ throw error function
 		}
 		for (int i = 0; i < index; i++)
 		{
 			curr = curr->next;
-			i++;
+			//i++;
 		}
 		return curr->value;
 	}
@@ -263,21 +285,28 @@ public:
 		{
 			return ss.str();
 		}
-					ss << curr->value << " ";
-					curr = curr->next;
+
+		ss << curr->value;
+		curr = curr->next;
+
+		if (listSize == 1)
+		{
+			return ss.str();
+		}
 
 		while ( curr->next != NULL)
 		{
-			ss << curr->value << " ";
+			ss << " " << curr->value;
 			curr = curr->next;
 		}
+		ss << " " << curr->value;
 
 		return ss.str();
 	}
 
 	bool checkDupe(T value)
 	{
-		Node *curr= head;
+		Node *curr = head;
 		while (curr->value != value)
 		{
 			if (curr->next == NULL)
